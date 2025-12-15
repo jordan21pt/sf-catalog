@@ -1,0 +1,47 @@
+services:
+  sf-catalog-db:
+    container_name: sf-catalog-db
+    image: mysql:8
+
+    environment:
+      MYSQL_ROOT_PASSWORD: ${SF_CATALOG_DB_PASSWORD}
+      MYSQL_USER: ${SF_CATALOG_DB_USER}
+      MYSQL_PASSWORD: ${SF_CATALOG_DB_PASSWORD}
+      MYSQL_DATABASE: ${SF_CATALOG_DB_DATABASE}
+    ports:
+      - "${SF_CATALOG_DB_HOST_PORT}:3306"
+    restart: always
+
+  sf-catalog-db-shadow:
+    container_name: sf-catalog-db-shadow
+    image: mysql:8
+
+    environment:
+      MYSQL_ROOT_PASSWORD: ${SF_CATALOG_DB_PASSWORD}
+      MYSQL_USER: ${SF_CATALOG_DB_USER}
+      MYSQL_PASSWORD: ${SF_CATALOG_DB_PASSWORD}
+      MYSQL_DATABASE: ${SF_CATALOG_SHADOW_DB_NAME}
+    ports:
+      - "${SF_CATALOG_DB_SHADOW_PORT}:3306"
+    restart: always
+
+  sf-catalog-api:
+    container_name: sf-catalog-api
+    image: sf-catalog-api
+    build:
+      context: .
+    ports:
+      - "${SF_CATALOG_API_PORT:-3003}:3000"
+    environment:
+      SF_CATALOG_API_PORT: 3000
+      SF_CATALOG_DB_HOST: ${SF_CATALOG_DB_HOST}
+      SF_CATALOG_DB_PORT: ${SF_CATALOG_DB_PORT}
+      SF_CATALOG_DB_USER: ${SF_CATALOG_DB_USER}
+      SF_CATALOG_DB_PASSWORD: ${SF_CATALOG_DB_PASSWORD}
+      SF_CATALOG_DB_DATABASE: ${SF_CATALOG_DB_DATABASE}
+      SF_CATALOG_DATABASE_URL: ${SF_CATALOG_DATABASE_URL_INTERNAL}
+      SF_CATALOG_SHADOW_DATABASE_URL: ${SF_CATALOG_SHADOW_DATABASE_URL_INTERNAL}
+    depends_on:
+      - sf-catalog-db
+volumes:
+  pgdata:
