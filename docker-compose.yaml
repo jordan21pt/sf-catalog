@@ -31,7 +31,7 @@ services:
     build:
       context: .
     ports:
-      - "${SF_CATALOG_API_PORT:-3003}:3000"
+      - "${SF_CATALOG_API_PORT:-3003}:3003"
     environment:
       SF_CATALOG_API_PORT: 3000
       SF_CATALOG_DB_HOST: ${SF_CATALOG_DB_HOST}
@@ -41,6 +41,10 @@ services:
       SF_CATALOG_DB_DATABASE: ${SF_CATALOG_DB_DATABASE}
       SF_CATALOG_DATABASE_URL: ${SF_CATALOG_DATABASE_URL_INTERNAL}
       SF_CATALOG_SHADOW_DATABASE_URL: ${SF_CATALOG_SHADOW_DATABASE_URL_INTERNAL}
+      SF_MQ_URL: ${SF_MQ_URL:-5672}
+      SF_MQ_EXCHANGE: ${SF_MQ_EXCHANGE:-sf.events}
+      SF_MQ_PRODUCT_CREATED_KEY: ${SF_MQ_PRODUCT_CREATED_KEY:-product.created.v1}
+      
     depends_on:
       - sf-catalog-db
 volumes:
