@@ -9,7 +9,22 @@ services:
       MYSQL_PASSWORD: ${SF_CATALOG_DB_PASSWORD}
       MYSQL_DATABASE: ${SF_CATALOG_DB_DATABASE}
     ports:
-      - "${SF_CATALOG_DB_HOST_PORT}:3306"
+      - "${SF_CATALOG_DB_PORT}:3306"
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "mysqladmin",
+          "ping",
+          "-h",
+          "localhost",
+          "-u",
+          "${SF_CATALOG_DB_USER}",
+          "-p${SF_CATALOG_DB_PASSWORD}",
+        ]
+      timeout: 5s
+      retries: 10
+      interval: 10s
     restart: always
 
   sf-catalog-db-shadow:
@@ -33,7 +48,7 @@ services:
     ports:
       - "${SF_CATALOG_API_PORT:-3003}:3003"
     environment:
-      SF_CATALOG_API_PORT: 3000
+      SF_CATALOG_API_PORT: 3003
       SF_CATALOG_DB_HOST: ${SF_CATALOG_DB_HOST}
       SF_CATALOG_DB_PORT: ${SF_CATALOG_DB_PORT}
       SF_CATALOG_DB_USER: ${SF_CATALOG_DB_USER}
@@ -44,8 +59,14 @@ services:
       SF_MQ_URL: ${SF_MQ_URL:-5672}
       SF_MQ_EXCHANGE: ${SF_MQ_EXCHANGE:-sf.events}
       SF_MQ_PRODUCT_CREATED_KEY: ${SF_MQ_PRODUCT_CREATED_KEY:-product.created.v1}
-      
+    command: >
+      sh -c "npx prisma migrate deploy &&
+             npm run start"
     depends_on:
-      - sf-catalog-db
+      sf-catalog-db:
+        condition: service_healthy
+      sf-catalog-db-shadow:
+        condition: service_started
+
 volumes:
   pgdata:
