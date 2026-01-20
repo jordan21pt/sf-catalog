@@ -27,10 +27,13 @@ export class ProductService {
   }
 
   async getProduct(id: number): Promise<Product> {
+    console.log('dentro da get product', id)
     const product: Product | null = await repo.findById(id)
+    
     if (!product) {
       throw new NotFoundError('Product not found')
     }
+    console.log(product)
     return product
   }
 
